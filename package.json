@@ -1,0 +1,25 @@
+{
+	"name": "n-docker",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "",
+	"main": "lib/index.js",
+	"files": [
+		"lib"
+	],
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"start": "node --es-module-specifier-resolution=node lib/index.js",
+		"dev": "start"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"engines": {
+		"node": ">=13.2.0"
+	},
+	"dependencies": {
+		"typescript": "^4.5.3"
+	}
+}
