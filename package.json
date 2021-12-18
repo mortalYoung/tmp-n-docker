@@ -10,6 +10,7 @@
 	"scripts": {
 		"build": "tsc",
 		"watch": "tsc --watch",
+		"prestart": "tar -czvf Dockerfile.tar Dockerfile",
 		"start": "node --es-module-specifier-resolution=node lib/index.js",
 		"dev": "start"
 	},
@@ -20,6 +21,10 @@
 		"node": ">=13.2.0"
 	},
 	"dependencies": {
+		"dockerode": "^3.3.1",
 		"typescript": "^4.5.3"
+	},
+	"devDependencies": {
+		"@types/dockerode": "^3.3.0"
 	}
 }
