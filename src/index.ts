@@ -1,20 +1,28 @@
 import {
+  assertBasicImages,
   createContainer,
-  getContainerByName,
+  getRunningContainerByName,
   execCommandInContainer,
 } from "./docker";
 
-(async function () {
-  //   const container = await createContainer("tttt");
-  const res = await getContainerByName("tttt");
-  if (res) {
-    const container = res;
-    await container.start();
-    container.resize({
-      h: process.stdout.rows,
-      w: process.stdout.columns,
-    });
+const containerName = 'liuyi_dt-tag1';
 
-    execCommandInContainer(container);
-  }
+(async function () {
+  await assertBasicImages()
+
+  // await createContainer(containerName);
+
+  const container = await getRunningContainerByName(containerName);
+  console.log(111, container)
+
+  // if (container) {
+  //   const container = container;
+  //   await container.start();
+  //   container.resize({
+  //     h: process.stdout.rows,
+  //     w: process.stdout.columns,
+  //   });
+
+  //   execCommandInContainer(container);
+  // }
 })();

@@ -4,28 +4,29 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
 const docker = new Docker();
+const imageNameTag = 'n8s:1.0.0';
 
 /**
  * ensure base image exist
  */
-async function assertBashImages() {
+async function assertBasicImages() {
   const containers = await docker.listImages({
-    filters: '{"label": ["TMPNDOCKER=true"]}',
+    filters: '{"label": ["N8S=true"]}',
   });
-  if (containers.length) {
-    return;
-  }
+  if (containers.length) return;
 
   const file = join(__dirname, "../", "Dockerfile.tar");
-  // TODO：为啥会多创建一个 alpine 的 images
-  const readStream = await docker.buildImage(file, { t: "tmp-n-docker" });
+  // TODO：为啥会多创建一个 alpine 的 images？
+  // 可能是需要 alpine 作为基础镜像
+  const stream = await docker.buildImage(file, { t: imageNameTag });
 
   await new Promise((resolve, reject) => {
-    docker.modem.followProgress(readStream, (err, res) =>
+    docker.modem.followProgress(stream, (err, res) => {
       err ? reject(err) : resolve(res)
-    );
+    }, (event) => {
+      console.log('creating', event)
+    });
   });
 }
 
@@ -36,7 +37,7 @@ async function assertBashImages() {
  */
 async function createContainer(name: string) {
   const container = await docker.createContainer({
-    Image: "tmp-n-docker",
+    Image: imageNameTag,
     AttachStdin: false,
     AttachStdout: true,
     AttachStderr: true,
@@ -49,6 +50,8 @@ async function createContainer(name: string) {
 
 /**
  * start a container
+ * @param id container id
+ * @returns
  */
 async function startContainer(id: string) {
   const containers = await docker.listContainers();
@@ -61,6 +64,10 @@ async function startContainer(id: string) {
   return container.start();
 }
 
+/**
+ * exec command in container, like ls
+ * @param container
+ */
 async function execCommandInContainer(container: Dockerode.Container) {
   const execInstance = await container.exec({
     Cmd: ["ls"],
@@ -71,21 +78,26 @@ async function execCommandInContainer(container: Dockerode.Container) {
   docker.modem.demuxStream(stream, process.stdout, process.stderr);
 }
 
-async function getContainerByName(name: string) {
+/**
+ * get container which running
+ * @param name container name
+ * @returns
+ */
+async function getRunningContainerByName(name: string) {
   const containers = await docker.listContainers();
-  // TODO: 有 name 重复的情况，想个办法弄成唯一
-  const results = containers.find((container) =>
-    container.Names.includes(name)
-  );
-  if (results) {
-    return docker.getContainer(results.Id);
-  }
-  return null;
+  const results = containers.find((container) => {
+    console.log(333, container)
+    container.Names.some(containerName => containerName.includes(name))
+  });
+  // console.log(222, name, results)
+  if (!results) return null;
+  return docker.getContainer(results.Id);
 }
 
 export {
+  assertBasicImages,
   createContainer,
   startContainer,
-  getContainerByName,
+  getRunningContainerByName,
   execCommandInContainer,
 };
