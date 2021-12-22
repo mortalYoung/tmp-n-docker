@@ -1,28 +1,44 @@
+import { assertBasicImages } from "./images";
 import {
-  assertBasicImages,
-  createContainer,
-  getRunningContainerByName,
-  execCommandInContainer,
-} from "./docker";
+    getContainerIdByName,
+    getContainerById,
+    createContainer,
+    startContainer,
+    stopContainer,
+    execCommandInContainer,
+} from "./container";
 
-const containerName = 'liuyi_dt-tag1';
+const containerName = 'liuyi_dt-tag';
 
 (async function () {
-  await assertBasicImages()
+    // 检查镜像是否存在，不存在则创建
+    await assertBasicImages()
 
-  // await createContainer(containerName);
+    // 根据提供的容器名称 查询容器
+    const containerId = await getContainerIdByName(containerName)
+    const container = await getContainerById(containerId)
 
-  const container = await getRunningContainerByName(containerName);
-  console.log(111, container)
+    // 容器不存在则根据提供的容器名称 创建容器
+    if (container) {
+        // 查询容器详细信息
+        const containerDetail = await container.inspect()
 
-  // if (container) {
-  //   const container = container;
-  //   await container.start();
-  //   container.resize({
-  //     h: process.stdout.rows,
-  //     w: process.stdout.columns,
-  //   });
+        if (containerDetail.State.Running) {
+            // await container.stop();
+            await stopContainer(containerId);
+        } else {
+            // await container.start();
+            await startContainer(containerId);
 
-  //   execCommandInContainer(container);
-  // }
+            container.resize({
+                h: process.stdout.rows,
+                w: process.stdout.columns,
+            });
+    
+            execCommandInContainer(container);
+        }
+    } else {
+        const newContainer = await createContainer(containerName)
+        await newContainer.start();
+    }
 })();
