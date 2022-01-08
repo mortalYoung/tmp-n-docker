@@ -2,4 +2,8 @@ lib/
 node_modules/
 *.lock
 
+.idea/
+.DS_Store
+/.vscode/
+
 *.tar

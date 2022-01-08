@@ -1,8 +1,8 @@
 {
-	"name": "n-docker",
+	"name": "n8s",
 	"version": "1.0.0",
 	"type": "module",
-	"description": "",
+	"description": "docker in nodejs",
 	"main": "lib/index.js",
 	"files": [
 		"lib"
@@ -11,10 +11,12 @@
 		"build": "tsc",
 		"watch": "tsc --watch",
 		"prestart": "tar -czvf Dockerfile.tar Dockerfile",
-		"start": "node --es-module-specifier-resolution=node lib/index.js",
-		"dev": "start"
+		"start": "yarn build && node --es-module-specifier-resolution=node lib/index.js"
 	},
-	"keywords": [],
+	"keywords": [
+		"docker",
+		"nodejs"
+	],
 	"author": "",
 	"license": "ISC",
 	"engines": {
