@@ -16,7 +16,7 @@ RUN mkdir ~/.ssh \
     && chmod 644 ~/.ssh/id_rsa.pub
 
 # 在镜像中挂载本机文件
-VOLUME ["~/.ssh/id_rsa","~/.ssh/id_rsa.pub"]
+# VOLUME ["~/.ssh/id_rsa","~/.ssh/id_rsa.pub"]
 
 # set git clone default dir
 WORKDIR /git/repo

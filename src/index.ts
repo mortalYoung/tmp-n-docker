@@ -1,44 +1,58 @@
 import { assertBasicImages } from "./images";
 import {
-    getContainerIdByName,
-    getContainerById,
-    createContainer,
-    startContainer,
-    stopContainer,
-    execCommandInContainer,
+	getContainerIdByName,
+	getContainerById,
+	createContainer,
+	startContainer,
+	stopContainer,
+	execCommandInContainer,
+	initialContainer,
 } from "./container";
 
-const containerName = 'liuyi_dt-tag';
+/**
+ * 初始化仓库做以下事件
+ * 1. 创建容器
+ * 2. 初始化容器必要的环境
+ * 3. 拉取仓库代码
+ */
+async function init(containerName: string) {
+	await assertBasicImages();
+	const containerId = await getContainerIdByName(containerName);
+	const container = await getContainerById(containerId);
+	if (container) {
+		throw new Error(
+			`[init]: The ${containerName} has already generated in repository, please delete the old one first.`
+		);
+	}
+	// 创建容器
+	const newContainer = await createContainer(containerName);
+	// 创建容器后, 默认运行容器并执行初始化容器的一些操作
+	await newContainer.start();
+	await initialContainer(newContainer);
 
-(async function () {
-    // 检查镜像是否存在，不存在则创建
-    await assertBasicImages()
+	// 初始化容器后, 关闭容器,
+	await newContainer.stop();
+}
 
-    // 根据提供的容器名称 查询容器
-    const containerId = await getContainerIdByName(containerName)
-    const container = await getContainerById(containerId)
+/**
+ * 打开仓库
+ */
+async function open(containerName: string) {
+	const containerId = await getContainerIdByName(containerName);
+	const container = await getContainerById(containerId);
+	if (!container) {
+		throw new Error(
+			`[open]: The ${containerName} was missing in repository, please execute the init method before this method`
+		);
+	}
+	const containerDetail = await container.inspect();
+	if (containerDetail.State.Running) {
+		return;
+	}
+	await container.start();
+}
 
-    // 容器不存在则根据提供的容器名称 创建容器
-    if (container) {
-        // 查询容器详细信息
-        const containerDetail = await container.inspect()
-
-        if (containerDetail.State.Running) {
-            // await container.stop();
-            await stopContainer(containerId);
-        } else {
-            // await container.start();
-            await startContainer(containerId);
-
-            container.resize({
-                h: process.stdout.rows,
-                w: process.stdout.columns,
-            });
-    
-            execCommandInContainer(container);
-        }
-    } else {
-        const newContainer = await createContainer(containerName)
-        await newContainer.start();
-    }
-})();
+/* 测试代码 */
+const containerName = "liuyi_Code-Style-Guide";
+// init(containerName);
+// open(containerName);
